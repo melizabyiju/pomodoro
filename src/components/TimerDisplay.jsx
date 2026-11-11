@@ -1,14 +1,16 @@
 import React from 'react';
 import { SESSION_TYPES, formatTime } from '../hooks/usePomodoroTimer';
-import { BookOpen, Coffee, PauseCircle, PlayCircle, Clock, Undo2 } from 'lucide-react';
+import { BookOpen, Coffee, PauseCircle, PlayCircle, Clock, Undo2, PictureInPicture2 } from 'lucide-react';
 
 export default function TimerDisplay({
   sessionType,
   remainingSeconds,
   totalDuration,
   isRunning,
+  hasStarted,
   interruptedSession,
   onResumeInterrupted,
+  onToggleFloating,
 }) {
   const radius = 150;
   const stroke = 10;
@@ -159,17 +161,22 @@ export default function TimerDisplay({
             {formattedTime}
           </div>
 
-          {/* Running / Paused State Tag */}
+          {/* Running / Paused / Ready State Tag */}
           <div className="mt-3 flex items-center gap-1.5 text-xs font-medium">
             {isRunning ? (
               <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-0.5 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 LIVE COUNTDOWN
               </span>
-            ) : (
+            ) : hasStarted ? (
               <span className="flex items-center gap-1.5 text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2.5 py-0.5 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                 PAUSED
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-sky-400 bg-sky-950/40 border border-sky-800/40 px-2.5 py-0.5 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                READY &bull; CLICK START
               </span>
             )}
           </div>
@@ -178,6 +185,18 @@ export default function TimerDisplay({
           <p className="mt-4 text-[11px] text-slate-400 max-w-[210px] leading-tight">
             {theme.subtext}
           </p>
+
+          {/* Quick Float Button (matching Windows 11 Focus session icon) */}
+          {onToggleFloating && (
+            <button
+              onClick={onToggleFloating}
+              title="Float mini timer (F)"
+              className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-sky-300 hover:bg-slate-800/60 px-2 py-1 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-700"
+            >
+              <PictureInPicture2 size={13} />
+              <span>Float Mini Window</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

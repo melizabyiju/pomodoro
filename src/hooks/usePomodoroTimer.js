@@ -25,7 +25,8 @@ export function usePomodoroTimer() {
   const [sessionType, setSessionType] = useState(SESSION_TYPES.STUDY);
   const [totalDuration, setTotalDuration] = useState(DEFAULT_STUDY_SECONDS);
   const [remainingSeconds, setRemainingSeconds] = useState(DEFAULT_STUDY_SECONDS);
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   
   // Preserved session for manual break interruption
   const [interruptedSession, setInterruptedSession] = useState(null);
@@ -48,8 +49,8 @@ export function usePomodoroTimer() {
     };
   });
 
-  // Target end timestamp in milliseconds
-  const targetEndTimeRef = useRef(Date.now() + DEFAULT_STUDY_SECONDS * 1000);
+  // Target end timestamp in milliseconds (null when timer has not started yet)
+  const targetEndTimeRef = useRef(null);
   const isTransitioningRef = useRef(false);
   const remainingSecondsRef = useRef(remainingSeconds);
   const sessionTypeRef = useRef(sessionType);
@@ -133,6 +134,7 @@ export function usePomodoroTimer() {
       setTotalDuration(newBreakSecs);
       setRemainingSeconds(newBreakSecs);
       setIsRunning(true);
+      setHasStarted(true);
     } else if (currentType === SESSION_TYPES.BREAK) {
       // 1. Break countdown reached 00:00 -> End break
       // 2. Switch to STUDY
@@ -158,6 +160,7 @@ export function usePomodoroTimer() {
       setTotalDuration(newStudySecs);
       setRemainingSeconds(newStudySecs);
       setIsRunning(true);
+      setHasStarted(true);
     } else if (currentType === SESSION_TYPES.MANUAL_BREAK) {
       // Manual break reached 00:00 -> Resume interrupted session
       const interrupted = interruptedSessionRef.current;
@@ -178,6 +181,7 @@ export function usePomodoroTimer() {
         setRemainingSeconds(resumeSecs);
         setInterruptedSession(null);
         setIsRunning(true);
+        setHasStarted(true);
       } else {
         // Fallback to normal study
         const newStudySecs = studyDurationRef.current;
@@ -186,6 +190,7 @@ export function usePomodoroTimer() {
         setTotalDuration(newStudySecs);
         setRemainingSeconds(newStudySecs);
         setIsRunning(true);
+        setHasStarted(true);
       }
     }
 
@@ -252,9 +257,9 @@ export function usePomodoroTimer() {
   useEffect(() => {
     const formatted = formatTime(remainingSeconds);
     const label = sessionType === SESSION_TYPES.STUDY ? 'STUDY' : sessionType === SESSION_TYPES.BREAK ? 'BREAK' : 'MANUAL BREAK';
-    const statusPrefix = isRunning ? '' : '[PAUSED] ';
+    const statusPrefix = isRunning ? '' : hasStarted ? '[PAUSED] ' : '[READY] ';
     document.title = `${statusPrefix}${formatted} - ${label} | Pomodoro`;
-  }, [remainingSeconds, sessionType, isRunning]);
+  }, [remainingSeconds, sessionType, isRunning, hasStarted]);
 
   // Pause
   const pauseTimer = useCallback(() => {
@@ -266,21 +271,25 @@ export function usePomodoroTimer() {
     targetEndTimeRef.current = null;
   }, []);
 
-  // Resume
-  const resumeTimer = useCallback(() => {
-    if (isRunningRef.current) return;
+  // Start / Resume
+  const startTimer = useCallback(() => {
     const secondsToRun = remainingSecondsRef.current;
     targetEndTimeRef.current = Date.now() + secondsToRun * 1000;
     setIsRunning(true);
+    setHasStarted(true);
   }, []);
+
+  const resumeTimer = useCallback(() => {
+    startTimer();
+  }, [startTimer]);
 
   const togglePlayPause = useCallback(() => {
     if (isRunning) {
       pauseTimer();
     } else {
-      resumeTimer();
+      startTimer();
     }
-  }, [isRunning, pauseTimer, resumeTimer]);
+  }, [isRunning, pauseTimer, startTimer]);
 
   // Reset current session to full configured duration
   const resetSession = useCallback(() => {
@@ -296,15 +305,17 @@ export function usePomodoroTimer() {
         setTotalDuration(interrupted.totalDuration);
         setRemainingSeconds(interrupted.remainingSeconds);
         setInterruptedSession(null);
-        targetEndTimeRef.current = Date.now() + interrupted.remainingSeconds * 1000;
-        setIsRunning(true);
+        targetEndTimeRef.current = null;
+        setIsRunning(false);
+        setHasStarted(false);
         return;
       }
     }
     setTotalDuration(fullDuration);
     setRemainingSeconds(fullDuration);
-    targetEndTimeRef.current = Date.now() + fullDuration * 1000;
-    setIsRunning(true);
+    targetEndTimeRef.current = null;
+    setIsRunning(false);
+    setHasStarted(false);
   }, []);
 
   // Skip current session directly to next session
@@ -385,6 +396,7 @@ export function usePomodoroTimer() {
     totalDuration,
     remainingSeconds,
     isRunning,
+    hasStarted,
     interruptedSession,
     soundEnabled,
     setSoundEnabled,
@@ -392,6 +404,7 @@ export function usePomodoroTimer() {
     setNotificationsEnabled,
     stats,
     togglePlayPause,
+    startTimer,
     pauseTimer,
     resumeTimer,
     resetSession,

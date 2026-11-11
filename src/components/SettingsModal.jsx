@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sliders, Volume2, Bell, Cpu, Check, RotateCcw } from 'lucide-react';
+import { X, Sliders, Volume2, Bell, Cpu, Check, RotateCcw, PictureInPicture2, ExternalLink } from 'lucide-react';
 import { playChime } from '../utils/audio';
 import { requestNotificationPermission, sendDesktopNotification } from '../utils/notifications';
 
@@ -13,6 +13,9 @@ export default function SettingsModal({
   setSoundEnabled,
   notificationsEnabled,
   setNotificationsEnabled,
+  onToggleFloating,
+  onOpenPiP,
+  canPiP,
 }) {
   const [studyMin, setStudyMin] = useState(Math.round(studyDuration / 60));
   const [breakMin, setBreakMin] = useState(Math.round(breakDuration / 60));
@@ -135,6 +138,49 @@ export default function SettingsModal({
                 <Bell size={14} className="text-amber-400" />
                 Test Notification
               </button>
+            </div>
+          </div>
+
+          {/* Floating Widget & Picture-in-Picture Setting */}
+          <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <PictureInPicture2 size={15} className="text-sky-400" />
+                Floating Mini-Player Mode
+              </span>
+              <span className="text-[10px] text-sky-400 font-mono font-semibold bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 rounded-full">
+                Windows Focus Style
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Shrink the timer into a floating mini-widget that stays in the corner while you work or browse, exactly like the Windows Focus Session mini-player.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onToggleFloating();
+                }}
+                className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs text-white font-semibold flex items-center gap-2 cursor-pointer shadow-md transition-all"
+              >
+                <PictureInPicture2 size={14} />
+                Toggle In-Page Floating Widget
+              </button>
+
+              {canPiP && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPiP();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-700 hover:border-sky-500 text-xs text-slate-200 font-semibold flex items-center gap-2 cursor-pointer transition-all"
+                >
+                  <ExternalLink size={14} className="text-sky-400" />
+                  Always-on-Top Desktop Window
+                </button>
+              )}
             </div>
           </div>
 

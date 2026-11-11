@@ -3,10 +3,12 @@ import { Play, Pause, RotateCcw, SkipForward, Coffee } from 'lucide-react';
 
 export default function Controls({
   isRunning,
+  hasStarted,
   onTogglePlayPause,
   onReset,
   onSkip,
   onOpenManualBreak,
+  onToggleFloating,
 }) {
   // Global keyboard shortcuts
   useEffect(() => {
@@ -23,12 +25,14 @@ export default function Controls({
         onSkip();
       } else if (e.key === 'm' || e.key === 'M') {
         onOpenManualBreak();
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (onToggleFloating) onToggleFloating();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onTogglePlayPause, onReset, onSkip, onOpenManualBreak]);
+  }, [onTogglePlayPause, onReset, onSkip, onOpenManualBreak, onToggleFloating]);
 
   return (
     <div className="flex flex-col items-center gap-4 mt-2">
@@ -45,11 +49,13 @@ export default function Controls({
         {/* Primary Play / Pause Button */}
         <button
           onClick={onTogglePlayPause}
-          title={isRunning ? 'Pause timer (Space)' : 'Start / Resume timer (Space)'}
+          title={isRunning ? 'Pause timer (Space)' : hasStarted ? 'Resume timer (Space)' : 'Start focus timer (Space)'}
           className={`px-8 sm:px-10 py-4 sm:py-4.5 rounded-2xl font-bold flex items-center gap-3 text-base sm:text-lg transition-all duration-200 active:scale-95 cursor-pointer shadow-2xl ${
             isRunning
-              ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25'
-              : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25'
+              ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/25 ring-2 ring-amber-400/30'
+              : hasStarted
+              ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25 ring-2 ring-emerald-400/30'
+              : 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/30 ring-4 ring-rose-500/20 animate-soft-pulse'
           }`}
         >
           {isRunning ? (
@@ -57,10 +63,15 @@ export default function Controls({
               <Pause className="w-6 h-6 fill-current" />
               <span>PAUSE</span>
             </>
-          ) : (
+          ) : hasStarted ? (
             <>
               <Play className="w-6 h-6 fill-current" />
               <span>RESUME</span>
+            </>
+          ) : (
+            <>
+              <Play className="w-6 h-6 fill-current ml-0.5" />
+              <span>START FOCUS</span>
             </>
           )}
         </button>
@@ -89,7 +100,8 @@ export default function Controls({
 
       {/* Keyboard Shortcuts Hint */}
       <div className="flex items-center gap-4 text-[11px] text-slate-400 mt-2">
-        <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">Space</kbd> Pause/Play</span>
+        <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">Space</kbd> Start/Pause</span>
+        <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">F</kbd> Float</span>
         <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">R</kbd> Reset</span>
         <span><kbd className="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-slate-300 font-mono">S</kbd> Skip</span>
       </div>

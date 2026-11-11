@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Bell, BellOff, Settings, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Bell, BellOff, Settings, PictureInPicture2 } from 'lucide-react';
 import { requestNotificationPermission } from '../utils/notifications';
 
 export default function Header({
@@ -8,6 +8,7 @@ export default function Header({
   notificationsEnabled,
   setNotificationsEnabled,
   onOpenSettings,
+  onToggleFloating,
 }) {
   const handleToggleNotifications = async () => {
     if (!notificationsEnabled) {
@@ -42,6 +43,17 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Floating Mini-Player Button */}
+        <button
+          onClick={onToggleFloating}
+          title="Float mini-player (F)"
+          aria-label="Float mini-player"
+          className="p-2.5 rounded-xl bg-slate-900 border border-sky-800/60 text-sky-400 hover:text-white hover:border-sky-500 hover:bg-slate-850 transition-all cursor-pointer flex items-center gap-1.5"
+        >
+          <PictureInPicture2 size={18} />
+          <span className="hidden sm:inline text-xs font-semibold">Float</span>
+        </button>
+
         {/* Sound Toggle */}
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
